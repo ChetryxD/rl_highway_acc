@@ -1,0 +1,14 @@
+# configs/default_config.yaml
+
+# DQN hyperparameters for HighwayACCEnv
+learning_rate: 0.0005
+buffer_size: 50000
+batch_size: 64
+gamma: 0.99
+tau: 1.0
+train_freq: 4
+target_update_interval: 1000
+exploration_fraction: 0.2
+exploration_final_eps: 0.02
+total_timesteps: 20000   # start small to test, we can increase later
+checkpoint_freq: 5000
