@@ -1,3 +1,4 @@
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/bf79eb9d-0e25-4105-b02a-b9d19ac3d4bd" />
 # Reinforcement Learning for Adaptive Cruise Control (ACC)
 
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
