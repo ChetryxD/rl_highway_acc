@@ -67,82 +67,57 @@ rl_highway_acc/
 Environment & Agent Design
 HighwayACCEnv (Gymnasium)
 
-The environment models longitudinal motion only:
+## Environment & Agent Design
 
-Ego & lead vehicle speeds are integrated using simple kinematics.
+### HighwayACCEnv (Gymnasium)
 
-The lead vehicle has a random acceleration component at each step.
+The environment models **longitudinal motion only**:
 
-The distance gap is updated as:
-### Distance Gap Update
+- Ego & lead vehicle speeds are integrated using simple kinematics.
+- The lead vehicle has a random acceleration component at each step.
 
-The longitudinal gap is updated using simple kinematics:
+**Distance gap update**
 
-$$
-\text{gap}_{t+1}
-=
-\text{gap}_t
-+
-(\text{lead}_v - \text{ego}_v) \cdot \Delta t
-$$
+The longitudinal distance gap is updated as:
 
-### Desired Time Headway
+`gap_{t+1} = gap_t + (lead_v - ego_v) * Δt`
 
-The desired gap follows a time-headway rule:
+**Desired time headway**
 
-$$
-\text{desired\_gap} = T_{\text{headway}} \cdot \text{ego\_speed}
-$$
+The desired safety gap is computed using a time-headway policy:
 
+`desired_gap = T_headway * ego_speed`
 
-
-A time headway policy is used to define the desired gap:
-
-desired_gap
-=
-𝑇
-headway
-⋅
-ego_speed
-desired_gap=T
-headway
-	​
-
-⋅ego_speed
+**Reward components**
 
 The reward combines:
 
-Headway error: r_gap = -k_gap * (gap - desired_gap)^2
+- Headway error: `r_gap = -k_gap * (gap - desired_gap)^2`
+- Comfort: `r_comfort = -k_acc * accel^2`
+- Overspeed penalty
+- Collision penalty (large negative reward + episode termination)
 
-Comfort: r_comfort = -k_acc * accel^2
+---
 
-Overspeed penalty
+### DQN Agent
 
-Collision penalty (large negative reward + episode termination)
+- Implemented using **Stable-Baselines3 (DQN)**
+- Policy: `MlpPolicy` (fully-connected neural network)
+- Core hyperparameters are stored in `configs/default_config.yaml`, including:
+  - `learning_rate`
+  - `buffer_size`
+  - `batch_size`
+  - `gamma`
+  - `exploration_fraction`, `exploration_final_eps`
+  - `total_timesteps`, etc.
 
-DQN Agent
+The training script wraps the custom environment in a `Monitor` and trains DQN end-to-end, saving the final model into the `models/` folder.
 
-Implemented using Stable-Baselines3
+---
 
-Policy: MlpPolicy (fully-connected neural network)
+## ⚙️ Setup
 
-Core hyperparameters are stored in configs/default_config.yaml:
-
-learning_rate
-
-buffer_size
-
-batch_size
-
-gamma
-
-exploration_fraction, exploration_final_eps
-
-total_timesteps, etc.
-
-The training script wraps the custom environment in a Monitor and trains DQN end-to-end, saving the final model into models/
-
-⚙️ Setup
+```bash
 # Clone the repository
 git clone https://github.com/ChetryxD/rl_highway_acc.git
 cd rl_highway_acc
@@ -150,24 +125,27 @@ cd rl_highway_acc
 # Create and activate the conda environment
 conda env create -f environment.yml
 conda activate rl_highway_acc
-▶️ Usage
 
-1. Sanity-check the environment (random actions)python scripts/test_env_run.py
-This runs a few steps with a random policy and prints the state + reward:t=  0.1s | ego_v=15.85 m/s | lead_v=19.31 m/s | gap= 39.60 m
+▶️ Usage
+1. Sanity-check the environment (random actions)
+python scripts/test_env_run.py
+This runs a few steps with a random policy and prints the state + reward, e.g.:
+t=  0.1s | ego_v=15.85 m/s | lead_v=19.31 m/s | gap= 39.60 m
 Step 0 | reward=...
 ...
 2. Train the DQN agent
 Hyperparameters are defined in configs/default_config.yaml.
 To start training:
 python scripts/train_dqn.py
-
 This will:
 
 Create a models/ folder (if not present)
 
 Train DQN for total_timesteps
 
-Save the model as:models/dqn_highway_acc_YYYYMMDD-HHMMSS.zip
+Save the model as: models/dqn_highway_acc_YYYYMMDD-HHMMSS.zip
+
+
 3. Evaluate a trained policy
 Edit the model path in scripts/evaluate_policy.py: model_path = os.path.join("models", "dqn_highway_acc_YYYYMMDD-HHMMSS")
 
